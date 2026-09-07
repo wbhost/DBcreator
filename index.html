@@ -136,4 +136,13 @@ App.openSourceEditor=()=>{const p=project();p.sources??=[];sourceLocations().for
 App.addEditorValue=()=>{const value=String(document.getElementById('editor-new-value')?.value||'').trim(),modal=state.dictionaryModal;if(!value||!modal)return;if(modal.type==='choice'){const f=table(modal.tableKey)?.fields.find(x=>x.id===modal.fieldId);if(!f)return;f.options=[...fieldChoices(f),value]}else{const p=project();p.sources??=[];if(!p.sources.some(x=>String(x).toLowerCase()===value.toLowerCase()))p.sources.push(value)}save();render()};
 function childSection(parent,t){const rows=project().records.filter(r=>r.tableKey===t.key&&r.parentId===parent.id),fs=fields(t),editing=rec(state.activeChildId);const dataRows=rows.map(row=>`<tr>${fs.map(f=>`<td>${fastEntryControl(row,f)}</td>`).join('')}<td>${progress(row,false).pct}%</td><td><span class="row"><button onclick="App.editChild('${row.id}')">Review / sources</button><button class="quiet danger" onclick="App.deleteRecord('${row.id}')">Delete</button></span></td></tr>`).join('');const editor=editing&&editing.tableKey===t.key&&editing.parentId===parent.id?`<div class="section" style="--section:#7c3aed"><div class="section-title spread"><span>Review and sources for this ${esc(t.name.slice(0,-1)||t.name)}</span><button onclick="App.closeChild()">Done</button></div>${fastEntryTable(editing,t)}</div>`:'';return `<div class="section" style="--section:#7c3aed"><div class="section-title spread"><span>${esc(t.name)} <span class="muted small">(${rows.length})</span></span><button class="primary" onclick="App.addRecord('${t.key}','${parent.id}')">+ Add ${esc(t.name.slice(0,-1)||t.name)}</button></div>${rows.length?`<div class="table-wrap" style="max-height:none"><table style="min-width:800px"><thead><tr>${fs.map(f=>`<th>${esc(f.label)}</th>`).join('')}<th>Review</th><th>Actions</th></tr></thead><tbody>${dataRows}</tbody></table></div>`:`<div class="empty">No related ${esc(t.name.toLowerCase())} yet. Click “+ Add” to create the first row.</div>`}</div>${editor}`}
 render();
-</script></body></html>
+</script><style>
+/* Data-entry tables favor readable controls; scroll sideways instead of crushing columns. */
+.table-wrap table{width:max-content;min-width:100%}
+.table-wrap table[style]{min-width:1380px!important}
+.table-wrap th,.table-wrap td{min-width:128px;padding:8px}
+.table-wrap td input,.table-wrap td select,.table-wrap td textarea{min-width:150px}
+.table-wrap td select{min-width:165px}
+.table-wrap td:nth-child(3) select{min-width:270px}
+.table-wrap td:nth-child(5) input{min-width:210px}
+</style></body></html>
