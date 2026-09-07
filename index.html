@@ -141,6 +141,8 @@ render();
 const dictionaryEditorActionBase=dictionaryEditorView;
 dictionaryEditorView=function(){let html=dictionaryEditorActionBase();const t=table(state.activeTableKey)||project().tables[0];fields(t).filter(f=>['select','button select'].includes(f.type)).forEach(f=>{const remove=`<button class="quiet danger move" onclick="App.deleteField('${t.key}','${f.id}')">×</button>`;const edit=`<button onclick="App.openChoiceEditor('${t.key}','${f.id}')">Edit options</button>`;html=html.replace(remove,edit+remove)});return html.replace('<button onclick="App.closeEditor()">Close</button>','<span class="row"><button onclick="App.closeEditor()">Cancel</button><button class="primary" onclick="App.saveEditor()">Save changes</button></span>')};
 App.saveEditor=()=>{save();App.closeEditor()};
+App.saveEditor=()=>{const modal=state.dictionaryModal;if(!modal)return;const values=[...document.querySelectorAll('.editor-dialog .field-list input')].map(input=>String(input.value||'').trim()).filter(Boolean);if(modal.type==='choice'){const f=table(modal.tableKey)?.fields.find(x=>x.id===modal.fieldId);if(f)f.options=[...new Map(values.map(x=>[x.toLowerCase(),x])).values()]}else project().sources=[...new Map(values.map(x=>[x.toLowerCase(),x])).values()];save();App.closeEditor()};
+App.deleteSource=(index)=>{const p=project();p.sources??=[];const value=String(p.sources[index]||'').trim();if(!value)return;if(!confirm(`Delete this source and clear it from every field that uses it?\n\n${value}`))return;p.sources.splice(index,1);p.records.forEach(r=>Object.values(r.meta||{}).forEach(meta=>{if(String(meta?.sourceLocation||'').trim().toLowerCase()===value.toLowerCase())meta.sourceLocation=''}));save();render()};
 render();
 </script><style>
 /* Data-entry tables favor readable controls; scroll sideways instead of crushing columns. */
@@ -151,6 +153,7 @@ render();
 .table-wrap td select{min-width:135px}
 .table-wrap td:nth-child(3) select{min-width:190px}
 .table-wrap td:nth-child(5) input{min-width:155px}
+.table-wrap table[style]{table-layout:fixed}.table-wrap td:nth-child(3) select{width:210px;min-width:160px;max-width:210px;text-overflow:ellipsis}
 .status-cell{display:flex;align-items:center;gap:6px}.status-light{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 9px;box-shadow:0 0 8px currentColor}.status-light.s-unreviewed{background:#8b98a5;color:#8b98a5}.status-light.s-progress{background:#d99618;color:#d99618}.status-light.s-verified{background:#20a35b;color:#20a35b}.status-light.s-none{background:#8b98a5;color:#8b98a5}
 .entry-row td:first-child{border-left:5px solid #8b98a5}.entry-row.s-progress td:first-child{border-left-color:#d99618}.entry-row.s-verified td:first-child{border-left-color:#20a35b}.entry-row.s-none td:first-child{border-left-color:#8b98a5}
 [data-theme="light"] .entry-row td:first-child b{color:#111!important}
